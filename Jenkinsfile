@@ -6,9 +6,9 @@ pipeline {
         AWS_DEFAULT_REGION = "us-east-1"
     }
 
-    tools {
-        terraform 'Terraform_1.6' // Set this in Manage Jenkins → Global Tool Configuration
-    }
+    // tools {
+    //     terraform 'Terraform_1.6' // Set this in Manage Jenkins → Global Tool Configuration
+    // }
 
     stages {
         stage('Checkout') {
