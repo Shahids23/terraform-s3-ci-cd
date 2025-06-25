@@ -17,9 +17,9 @@ pipeline {
             steps {
                 withAWS(credentials: '084828603029', region: "${env.AWS_DEFAULT_REGION}") {
                     dir("${env.TF_WORKING_DIR}") {
-                        sh 'terraform init'
-                        sh 'terraform validate'
-                        sh 'terraform plan -out=tfplan'
+                        bat 'terraform init'
+                        bat 'terraform validate'
+                        bat 'terraform plan -out=tfplan'
                     }
                 }
             }
@@ -29,7 +29,7 @@ pipeline {
             steps {
                 withAWS(credentials: '084828603029', region: "${env.AWS_DEFAULT_REGION}") {
                     dir("${env.TF_WORKING_DIR}") {
-                        sh 'terraform apply -auto-approve tfplan'
+                        bat 'terraform apply -auto-approve tfplan'
                     }
                 }
             }
