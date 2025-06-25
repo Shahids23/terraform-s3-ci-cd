@@ -2,13 +2,9 @@ pipeline {
     agent any
 
     environment {
-        TF_WORKING_DIR = "./" // Update if your .tf files are in a subfolder
+        TF_WORKING_DIR = "./"
         AWS_DEFAULT_REGION = "us-east-1"
     }
-
-    // tools {
-    //     terraform 'Terraform_1.6' // Set this in Manage Jenkins → Global Tool Configuration
-    // }
 
     stages {
         stage('Checkout') {
@@ -17,56 +13,35 @@ pipeline {
             }
         }
 
-        stage('Setup AWS Credentials') {
+        stage('Terraform Init & Plan') {
             steps {
-                withCredentials([usernamePassword(credentialsId: '084828603029', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    sh 'echo "AWS credentials set"'
-                }
-            }
-        }
-
-        stage('Terraform Init') {
-            steps {
-                dir("${env.TF_WORKING_DIR}") {
-                    sh 'terraform init'
-                }
-            }
-        }
-
-        stage('Terraform Validate') {
-            steps {
-                dir("${env.TF_WORKING_DIR}") {
-                    sh 'terraform validate'
-                }
-            }
-        }
-
-        stage('Terraform Plan') {
-            steps {
-                dir("${env.TF_WORKING_DIR}") {
-                    sh 'terraform plan -out=tfplan'
+                withAWS(credentials: '084828603029', region: "${env.AWS_DEFAULT_REGION}") {
+                    dir("${env.TF_WORKING_DIR}") {
+                        sh 'terraform init'
+                        sh 'terraform validate'
+                        sh 'terraform plan -out=tfplan'
+                    }
                 }
             }
         }
 
         stage('Terraform Apply') {
             steps {
-                dir("${env.TF_WORKING_DIR}") {
-                    sh 'terraform apply -auto-approve tfplan'
+                withAWS(credentials: '084828603029', region: "${env.AWS_DEFAULT_REGION}") {
+                    dir("${env.TF_WORKING_DIR}") {
+                        sh 'terraform apply -auto-approve tfplan'
+                    }
                 }
             }
         }
     }
 
     post {
-        always {
-            echo 'Cleaning up...'
-        }
         success {
-            echo 'Terraform deployed successfully!'
+            echo "Terraform deployed successfully!"
         }
         failure {
-            echo 'Terraform deployment failed.'
+            echo "Terraform deployment failed."
         }
     }
 }
